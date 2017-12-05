@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.tms.dao.NewsMapper">
+	<!--结果集合-->
+    <resultMap id="newsMapper" type="News">
+        <!--实体的主键-->
+        <id column="information_code" property="information_code"/>
+        <!--常规属性：result节点-->
+        <result column="title" property="title"/>
+        <result column="titlecolor" property="titlecolor"/>
+        <result column="content" property="content"/>
+        <result column="update_date" property="update_date"/>
+        
+        <!--关联：多对一-->
+        <association property="column" javaType="Column">
+            <id column="syscode" property="syscode"></id>
+            <result column="columnname" property="columnname"></result>
+        </association>
+        <association property="user" javaType="User">
+            <id column="userid" property="userid"></id>
+            <result column="username" property="username"></result>
+        </association>
+    </resultMap>
+	<!-- 1.根据ColumnType类型  分页查询新闻 -->
+	<select id="findNewsByColumnType" resultMap="newsMapper">
+		select * from news_information n,tms_user u,cm_column c
+		where n.create_by=u.userid and n.columntype=c.syscode and columntype=#{columntype}
+		limit #{pageIndex},#{pageSize}
+	</select>
+	
+	<!--2. 查询总记录数 -->
+	<select id="getTotalCount" resultType="java.lang.Integer">
+		select count(1) from news_information where columntype=#{xxx}
+	</select>
+</mapper>

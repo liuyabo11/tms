@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.tms.dao.RoleMapper">
+	<!-- 分页查询 -->
+	<!--分页查询所有记录-->
+    <select id="findRoleByUserId" resultType="Role">
+        select * from sys_role where
+    	rid in (select roleId from sys_user_role where userId = #{userid})
+        limit #{pageIndex},#{pageSize}
+    </select>
+	
+	
+	<!-- 查询总记录数 -->
+	<select id="getTotalCount" resultType="java.lang.Integer">
+		select count(1) from sys_user_role where 1=1 
+		<if test="userid!=null and userid!=''">
+         	and userid = #{userid} 
+        </if>
+	</select>
+</mapper>

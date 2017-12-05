@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:aop="http://www.springframework.org/schema/aop" 
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+    http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx-3.2.xsd 
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+    
+    <!-- 01.配置连接数据库的核心配置文件 -->
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">    
+	    <property name="locations">    
+	        <list>    
+	            <value>classpath:database.properties</value>    
+	        </list>
+	    </property>
+	</bean>  
+    <!-- 02.JNDI获取数据源（dbcp连接池） -->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+    destroy-method="close" scope="singleton">
+    	<property name="driverClassName" value="${driverClassName}"/>
+    	<property name="url" value="${url}"/>
+    	<property name="username" value="${username}"/>
+    	<property name="password" value="${password}"/>
+    	<property name="initialSize" value="${initialSize}"/>
+    	<property name="maxActive" value="${maxActive}"/>
+    	<property name="maxIdle" value="${maxIdle}"/>
+    	<property name="minIdle" value="${minIdle}"/>
+    	<property name="maxWait" value="${maxWait}"/>
+    	<!-- 当前空闲个数<2 && 当前活动数>最大活动数-3 -->
+    	<property name="removeAbandoned" value="${removeAbandoned}"/>
+    	<!-- 超时回收无用连接  默认时间300 -->
+    	<property name="removeAbandonedTimeout" value="${removeAbandonedTimeout}"/>
+    	
+    	<!-- 配置sql心跳：保证连接池中的连接是真实有效的连接 -->
+    	<!-- testWhileIdle testOnBorrow testOnReturn
+    		validationQuery-select 1
+    	 -->
+    	 <!-- 开启Evict的定时校验，循环校验 -->
+    	 <property name="testWhileIdle" value="true"/>
+    	 <!-- 定义Evict时间间隔，单位：毫秒。大于0才会开启evict -->
+    	 <property name="timeBetweenEvictionRunsMillis" value="60000"/>
+    	 <!-- 在进行borrowObject处理的时候，会对拿到的连接进行校验   false不校验 -->
+    	 <property name="testOnBorrow" value="false"/>
+    	 <!-- 在进行returnObject处理时，会对返回的连接进行校验   false不校验 -->
+    	 <property name="testOnReturn" value="false"/>
+    	 <!-- 校验使用的sql语句，validationQuery,不要太复杂，否则会影响系统性能 -->
+    	 <property name="validationQuery" value="select 1"/>
+    	 <!-- 配置每次校验连接的数量 和 最大活动数一样 -->
+    	 <property name="numTestsPerEvictionRun" value="${maxActive}"></property>
+    </bean>
+    
+    
+    <!-- 03.事务管理的配置 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    	<property name="dataSource" ref="dataSource"/>
+    </bean>
+    
+    
+    <!-- 04.aspectj配置事务 -->
+    <aop:aspectj-autoproxy/>
+    <!-- 配置通知advice -->
+    <tx:advice id="myAdvice" transaction-manager="transactionManager">
+    	<tx:attributes>
+    		<tx:method name="hl*" isolation="DEFAULT" propagation="REQUIRED" rollback-for="Exception"/>
+    	</tx:attributes>
+    </tx:advice>
+    <!--  配置顾问-->
+    <aop:config proxy-target-class="true">
+    	<aop:pointcut expression="execution(* *..service..*(..))" id="myPointcut"/>
+    	<aop:advisor advice-ref="myAdvice" pointcut-ref="myPointcut"/>
+    </aop:config>
+    
+    
+    
+    <!-- 05.配置MyBatis的 sqlSessionFactoryBean -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+    	<property name="dataSource" ref="dataSource"/>
+    	<property name="configLocation" value="classpath:mybatis-config.xml"/>
+    </bean>
+    
+    <!-- 06.mapper接口所在的包名,spring会自动查找包下的mapper -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+    	<property name="basePackage" value="cn.tms.dao"/>
+    </bean>
+    
+    
+    <!-- 07.redis的配置 -->
+    
+    
+    
+    
+</beans>

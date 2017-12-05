@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.tms.dao.UserMapper">
+	<!-- 用户登录 -->
+	<select id="login" parameterType="User" resultType="User">
+		select userid,username,userpwd,usertype from tms_user 
+		where username=#{username} and userpwd=#{userpwd}
+	</select>
+	
+	<!-- 根据用户id 获取所有的权限 -->
+	<select id="findAllPrivileges" resultType="Privilege">
+		SELECT * FROM sys_privilege WHERE id IN 
+			(SELECT privilegeId FROM sys_role_privilege WHERE roleId IN
+				(
+					SELECT roleId FROM sys_user_role WHERE userId =#{xxx}
+				)
+			)
+	</select>
+	
+	<!-- 获取所有的权限 -->
+	<select id="getAllPrivileges" resultType="Privilege">
+		select * from sys_privilege
+	</select>
+	
+	
+	<!-- 根据角色id查询所有的权限 -->
+	<select id="findAllPrivilegesByRoleId" resultType="Privilege">
+		select * from sys_privilege where id in 
+		(select privilegeId from sys_role_privilege where roleId=#{xxx})
+	</select>
+</mapper>

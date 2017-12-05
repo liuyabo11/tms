@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.tms.dao.PrivilegeMapper">
+	
+	<!--根据角色编号删除权限-->
+    <delete id="delPrivilegeByRoleId" parameterType="java.lang.Integer">
+        delete from sys_role_privilege where roleId=#{xxx}
+    </delete>
+	
+	
+	<!-- 给角色分配权限 -->
+	<insert id="addDataToRolePrivilege">
+		insert into sys_role_privilege (roleId,privilegeId) values(#{rid},#{pid})
+	</insert>
+</mapper>
